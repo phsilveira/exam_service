@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - /data/pg_todo:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  nginx:
+    image: nginx:latest
+    ports: 
+      - "80:80"
+    volumes:
+      - .:/code
+      - ./conf/nginx:/etc/nginx/conf.d
+      - ./static:/static
+    
+  web:
+    build: .
+    #command: 'gunicorn todosite.wsgi:application -w 2 -b :8000 --capture-output --enable-stdio-inheritance --log-level=debug --access-logfile=- --log-file=-'
+    command: 'python manage.py runserver 0.0.0.0:8000'
+    volumes:
+      - .:/code
+    expose:
+      - "8000"
+    depends_on:
+      - db
+
+  redis:
+    image : redis
+    ports:
+      - "6379:6379"
+
